@@ -1,14 +1,20 @@
 from pathlib import Path
 
 current_platform = ''
+
 web_drivers = {
     'Chrome': 'https://sites.google.com/chromium.org/driver/',
     'Firefox': 'https://github.com/mozilla/geckodriver/releases/',
 }
 
+engines = {
+    'Stockfish': 'https://stockfishchess.org/',
+    'Komodo': 'https://komodochess.com/downloads.htm',
+}
+
 directories = [
     '../bin/driver',
-    '../engine'
+    '../bin/engine'
 ]
 
 
@@ -56,9 +62,17 @@ def setup():
     create_directories(directories)
     setup_platform()
 
-    print('Download web driver for browser which you want to use and place it in `bin/driver/` folder')
+    print('Download web driver for browser which you want to use.')
+    print('Rename it to `driver.exe` and replace to `bin/driver`')
     for browser, url in web_drivers.items():
         print(browser, '-', url)
+    print()
+
+    print('Download chess engine which you want to use.')
+    print('Rename it to `engine.exe` and replace to `bin/engine`')
+    for engine, url in engines.items():
+        print(engine, '-', url)
+    print()
 
 
 setup()
