@@ -63,7 +63,8 @@ def setup():
     setup_platform()
 
     print('Download web driver for browser which you want to use.')
-    print('Rename it to `driver.exe` and replace to `bin/driver`')
+    print('Rename it to `<browser name>_driver.exe` and replace to `bin/driver`')
+    print('Example: `bin/driver/chrome_driver.exe`')
     for browser, url in web_drivers.items():
         print(browser, '-', url)
     print()
