@@ -38,6 +38,7 @@ const selectors = {
     }
 }
 
+
 function getPlayerColor() {
     switch (current_chess_site) {
         case 'lichess':
@@ -120,9 +121,78 @@ function createCircle(x, y, radius) {
 }
 
 
+var isWorking = true;
 var activeCircles = [];
 
+function clearPaintings() {
+    activeCircles.forEach((el) => {el.remove()});
+    activeCircles = [];
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.message === 'switch_state') {
+        isWorking = request.state;
+
+        if (isWorking) {
+            getMovesAndDraw();
+        } else {
+            clearPaintings();
+        }
+
+        return true;
+    }
+});
+
+
+function getAllMoves() {
+    const moves = document.querySelector(selectors[move_table_name][current_chess_site]);
+    let allMoves = '\n';
+    let moveCount = 0;
+    if (moves) {
+        const moveList = moves.getElementsByTagName(selectors[move_table_placeholder_name][current_chess_site]);
+        if (moveList && moveList[0]) {
+            for (const el of moveList[0].children) {
+                if (el.localName === 'u8t') {
+                    allMoves += el.innerText + '\n';
+                    moveCount++;
+                }
+            }
+        }
+    }
+
+    return [allMoves, moveCount];
+}
+
+function sendMovesAndDrawBest(msg) {
+    chrome.runtime.sendMessage({
+        message: move_made,
+        payload: msg
+    }, response => {
+        console.log('[backend]:', response);
+
+        clearPaintings();
+        const m = parseMoveString(response);
+
+        for (let i = 0; i <= 2; i += 2) {                            
+            const p = getCircleCoords(m[i], m[i+1]);
+            const circle = createCircle(p[0], p[1], squareWidth / 2);
+
+            activeCircles.push(document.querySelector('body').appendChild(circle));
+        }
+    });
+}
+
+function getMovesAndDraw() {
+    const [allMoves, moveCount] = getAllMoves();
+    const msg = allMoves + moveCount;
+    sendMovesAndDrawBest(msg);
+}
+
 const callback = function(mutationsList, observer) {
+    if (!isWorking) {
+        return;
+    }
+
     for (const mutation of mutationsList) {
         if (mutation.type === 'childList') {
             const addedNode = mutation.addedNodes[0];
@@ -138,41 +208,10 @@ const callback = function(mutationsList, observer) {
                     continue;
                 }
 
-                const moves = document.querySelector(selectors[move_table_name][current_chess_site]);
-                var allMoves = '\n';
-                var moveCount = 0;
-                if (moves) {
-                    const moveList = moves.getElementsByTagName(selectors[move_table_placeholder_name][current_chess_site]);
-                    if (moveList && moveList[0]) {
-                        for (const el of moveList[0].children) {
-                            if (el.localName === 'u8t') {
-                                allMoves += el.innerText + '\n';
-                                moveCount++;
-                            }
-                        }
-                    }
-                }
+                getMovesAndDraw();
 
-                const msg = allMoves + moveCount;
-
-                chrome.runtime.sendMessage({
-                    message: move_made,
-                    payload: msg
-                }, response => {
-                    console.log('[backend]:', response);
-
-                    activeCircles.forEach((el) => {el.remove()});
-                    activeCircles = [];
-
-                    const m = parseMoveString(response);
-
-                    for (let i = 0; i <= 2; i += 2) {                            
-                        const p = getCircleCoords(m[i], m[i+1]);
-                        const circle = createCircle(p[0], p[1], squareWidth / 2);
-
-                        activeCircles.push(document.querySelector('body').appendChild(circle));
-                    }
-            });
+                
+                return;
             }
         }
     }

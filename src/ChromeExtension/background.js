@@ -1,5 +1,24 @@
 const working_port = '9092';
 const move_made = 'move_made';
+const switch_state = 'switch_state';
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.set({
+       isActive: true
+    });
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.message === switch_state) {
+        chrome.storage.local.get('isActive', (data) => {
+            chrome.storage.local.set({isActive: !data.isActive});
+
+            chrome.tabs.query({active: true, currentWindow: true}, tabs => {
+                chrome.tabs.sendMessage(tabs[0].id, {message: switch_state, state: !data.isActive});
+            });
+        });
+    }
+});
 
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {

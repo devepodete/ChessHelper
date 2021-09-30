@@ -27,7 +27,6 @@ class ChessHelper:
     def makeMove(self, move):
         m = self.board.push_san(move)
         self.moves.append(move)
-        self.logger.log(f'made move {m}')
 
     def getNextBestMove(self) -> str:
         best_move = self.engine.play(self.board, chess.engine.Limit(time=0.1))
@@ -59,7 +58,6 @@ class SocketWorker:
         self.logger.log('setting up socket worker...')
         self.sock.bind(('', self.port))
         self.logger.log(f'working port is {self.port}')
-        #self.sock.settimeout(10)
         self.sock.listen(1)
 
     @staticmethod
@@ -85,7 +83,6 @@ class SocketWorker:
 
             receivedMoves = Parser.parseMoves(data)
             self.chessHelper.resetBoard()
-            self.logger.log(f'got data: `{receivedMoves}`')
 
             for move in receivedMoves:
                 self.chessHelper.makeMove(move)
