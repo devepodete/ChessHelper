@@ -20,3 +20,6 @@ This should be used only for playing against computers.
 2. Run localhost chess worker ```python3 src/ChessBot/main.py```
 3. Open console in your browser
 4. Go to one of supported websites and enjoy
+
+### Demo
+![Demo gif](demo.gif)
