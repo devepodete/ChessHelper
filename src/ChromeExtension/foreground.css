@@ -27,3 +27,13 @@
     background-color: black;
     cursor: pointer;
 }
+
+.ce_circle {
+    border-radius: 50%;
+    position: absolute;
+    opacity: 0.4;
+    z-index: 999999;
+    pointer-events: none;
+
+    background-color: #B52B52;
+}

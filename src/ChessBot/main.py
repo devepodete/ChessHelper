@@ -40,10 +40,6 @@ class ChessHelper:
     def printMoves(self):
         print(self.moves)
 
-    def __del__(self):
-        self.engine.quit()
-
-
 class Parser:
     @staticmethod
     def parseMove(string):
@@ -62,6 +58,7 @@ class SocketWorker:
         self.logger.log('setting up socket worker...')
         self.sock.bind(('', self.port))
         self.logger.log(f'working port is {self.port}')
+        #self.sock.settimeout(10)
         self.sock.listen(1)
 
     @staticmethod
@@ -90,6 +87,7 @@ class SocketWorker:
 
             self.chessHelper.makeMove(receivedMove)
             bestMove = self.chessHelper.getNextBestMove()
+            print(f'{bestMove=}')
 
             if bestMove == 'None':
                 self.chessHelper.resetBoard()
@@ -101,12 +99,13 @@ class SocketWorker:
             self.sendResponse(conn, ' '.join([bestMove, score]))
             self.logger.log('OK')
 
-    def __del__(self):
-        self.sock.close()
 
-
-workingPort = 9090
-enginePath = '../engine/engine.exe'
+workingPort = 9092
+enginePath = '../../bin/engine/engine.exe'
 
 sw = SocketWorker(workingPort, ChessHelper(enginePath))
+
+
 sw.run()
+sw.sock.close()
+sw.chessHelper.engine.quit()
