@@ -1,32 +1,69 @@
-const chess_site = 'lichess';
-const move_table = 'move_box_name'
+const supported_sites = ['lichess.org'];
+const lichess = 'lichess';
+
+
+const href = window.location.href;
+var current_chess_site = null;
+
+for (const site of supported_sites) {
+    if (href.indexOf(site) != -1) {
+        current_chess_site = site.split('.')[0];
+        break;
+    }
+}
+
+const Color = Object.freeze({
+    WHITE: Symbol("white"),
+    BLACK: Symbol("black")
+});
+
+
+const chess_board_name = 'chess_board_name';
+const move_table_name = 'move_box_name';
+
+console.log('href:', href);
+console.log('current_chess_site:', current_chess_site);
 
 const data = {
-  ['lichess']: {
-      [move_table]: 'l4x'
+  [lichess]: {
+      [move_table_name]: 'l4x'
   }
 };
+
+const selectors = {
+    [chess_board_name]: {
+        [lichess]: '#main-wrap > main > div.round__app.variant-standard > div.round__app__board.main-board',
+    },
+    [move_table_name]: {
+        [lichess]: '#main-wrap > main > div.round__app.variant-standard > rm6',
+    }
+}
+
+function getPlayerColor() {
+    switch (current_chess_site) {
+        case 'lichess':
+            var orientationDiv = document.querySelector('#main-wrap > main > div.round__app.variant-standard > div.round__app__board.main-board > div');
+            if (orientationDiv) {
+                if (orientationDiv.className.search('black') != -1) {
+                    return Color.BLACK;
+                }
+                return Color.WHITE;
+            }    
+            break;
+    }
+
+    return null;
+}
+
+var orientation = getPlayerColor();
+console.log('orientation:', orientation);
 
 const moveLocalName = 'u8t';
 const move_made = 'move_made';
 
-var board = document.querySelector('#main-wrap > main > div.round__app.variant-standard > div.round__app__board.main-board');
+var board = document.querySelector(selectors[chess_board_name][current_chess_site]);
 var ranks = document.querySelector('#main-wrap > main > div.round__app.variant-standard > div.round__app__board.main-board > div > cg-container > coords.ranks');
 var files = document.querySelector('#main-wrap > main > div.round__app.variant-standard > div.round__app__board.main-board > div > cg-container > coords.files');
-
-var orientationDiv = document.querySelector('#main-wrap > main > div.round__app.variant-standard > div.round__app__board.main-board > div');
-var orientation = null;
-
-
-if (orientationDiv) {
-    if (orientationDiv.className.search('black') != -1) {
-        orientation = 'black';
-    } else {
-        orientation = 'white';
-    }
-    console.log('orientation:', orientation);
-}
-
 
 function parseMoveString(moveString) {
     const pos1letter = moveString[0];
@@ -60,10 +97,7 @@ function getCircleCoords(moveLetter, moveNumber) {
     const charInt = moveLetter.charCodeAt(0);
     const numInt = parseInt(moveNumber);
 
-    console.log('l, r, t, b:', left, right, top, bottom);
-    console.log('sh, sw', squareHeight, squareWidth);
-
-    if (orientation === 'white') {
+    if (orientation === Color.WHITE) {
         x = left + (charInt - 'a'.charCodeAt(0)) * squareWidth;
         y = bottom - (numInt) * squareHeight;
     } else {
@@ -74,8 +108,20 @@ function getCircleCoords(moveLetter, moveNumber) {
     return [x + squareWidth / 4, y + squareHeight / 4];
 }
 
-var activeCircles = []
+function createCircle(x, y, radius) {
+    var circle = document.createElement('DIV');
+    circle.classList.add('ce_circle');
 
+    circle.style['width'] = radius + 'px';
+    circle.style['height'] = radius + 'px';
+    circle.style['left'] = x + 'px';
+    circle.style['top'] = y + 'px';
+
+    return circle;
+}
+
+
+var activeCircles = [];
 
 const callback = function(mutationsList, observer) {
     for (const mutation of mutationsList) {
@@ -85,7 +131,7 @@ const callback = function(mutationsList, observer) {
                 var move = null;
                 if (addedNode.localName === moveLocalName) {
                     move = addedNode.innerText;
-                } else if (addedNode.localName === data[chess_site][move_table]) {
+                } else if (addedNode.localName === data[current_chess_site][move_table_name]) {
                     move = addedNode.innerText.split('\n')[1];
                 }
 
@@ -105,17 +151,9 @@ const callback = function(mutationsList, observer) {
                     if (board != null) {
                         const m = parseMoveString(response);
 
-                        for (let i = 0; i <= 2; i += 2) {
-                            const circle = document.createElement('DIV');
-                            circle.classList.add('ce_circle');
-                            
+                        for (let i = 0; i <= 2; i += 2) {                            
                             const p = getCircleCoords(m[i], m[i+1]);
-                            console.log('circle cords:', p);
-
-                            circle.style['width'] = squareWidth / 2 + 'px';
-                            circle.style['height'] = squareHeight / 2 + 'px';
-                            circle.style['left'] = p[0] + 'px';
-                            circle.style['top'] = p[1] + 'px';
+                            const circle = createCircle(p[0], p[1], squareWidth / 2);
 
                             activeCircles.push(document.querySelector('body').appendChild(circle));
                         }
@@ -128,7 +166,7 @@ const callback = function(mutationsList, observer) {
 
 
 
-const moveBox = document.querySelector('#main-wrap > main > div.round__app.variant-standard > rm6');
+const moveBox = document.querySelector(selectors[move_table_name][current_chess_site]);
 const config = { attributes: true, childList: true, subtree: true };
 
 
@@ -137,6 +175,3 @@ if (moveBox) {
     console.log('Move box found');
     observer.observe(moveBox, config);
 }
-
-    
-

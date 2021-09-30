@@ -1,3 +1,4 @@
+const working_port = '9092';
 const move_made = 'move_made';
 
 
@@ -24,7 +25,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === move_made) {
-        fetch('http://localhost:9092', {
+        fetch('http://localhost:' + working_port, {
             method: 'POST',
             body: request.payload
         })
