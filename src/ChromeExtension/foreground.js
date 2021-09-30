@@ -19,16 +19,12 @@ const Color = Object.freeze({
 
 
 const chess_board_name = 'chess_board_name';
-const move_table_name = 'move_box_name';
+const move_table_name = 'move_table_name';
+const move_table_placeholder_name = 'move_table_placeholder_name';
 
 console.log('href:', href);
 console.log('current_chess_site:', current_chess_site);
 
-const data = {
-  [lichess]: {
-      [move_table_name]: 'l4x'
-  }
-};
 
 const selectors = {
     [chess_board_name]: {
@@ -36,6 +32,9 @@ const selectors = {
     },
     [move_table_name]: {
         [lichess]: '#main-wrap > main > div.round__app.variant-standard > rm6',
+    },
+    [move_table_placeholder_name]: {
+        [lichess]: 'l4x',
     }
 }
 
@@ -131,7 +130,7 @@ const callback = function(mutationsList, observer) {
                 var move = null;
                 if (addedNode.localName === moveLocalName) {
                     move = addedNode.innerText;
-                } else if (addedNode.localName === data[current_chess_site][move_table_name]) {
+                } else if (addedNode.localName === selectors[move_table_placeholder_name][current_chess_site]) {
                     move = addedNode.innerText.split('\n')[1];
                 }
 
@@ -139,26 +138,41 @@ const callback = function(mutationsList, observer) {
                     continue;
                 }
 
+                const moves = document.querySelector(selectors[move_table_name][current_chess_site]);
+                var allMoves = '\n';
+                var moveCount = 0;
+                if (moves) {
+                    const moveList = moves.getElementsByTagName(selectors[move_table_placeholder_name][current_chess_site]);
+                    if (moveList && moveList[0]) {
+                        for (const el of moveList[0].children) {
+                            if (el.localName === 'u8t') {
+                                allMoves += el.innerText + '\n';
+                                moveCount++;
+                            }
+                        }
+                    }
+                }
+
+                const msg = allMoves + moveCount;
+
                 chrome.runtime.sendMessage({
                     message: move_made,
-                    payload: move
+                    payload: msg
                 }, response => {
                     console.log('[backend]:', response);
 
                     activeCircles.forEach((el) => {el.remove()});
                     activeCircles = [];
 
-                    if (board != null) {
-                        const m = parseMoveString(response);
+                    const m = parseMoveString(response);
 
-                        for (let i = 0; i <= 2; i += 2) {                            
-                            const p = getCircleCoords(m[i], m[i+1]);
-                            const circle = createCircle(p[0], p[1], squareWidth / 2);
+                    for (let i = 0; i <= 2; i += 2) {                            
+                        const p = getCircleCoords(m[i], m[i+1]);
+                        const circle = createCircle(p[0], p[1], squareWidth / 2);
 
-                            activeCircles.push(document.querySelector('body').appendChild(circle));
-                        }
+                        activeCircles.push(document.querySelector('body').appendChild(circle));
                     }
-                });
+            });
             }
         }
     }
@@ -171,7 +185,7 @@ const config = { attributes: true, childList: true, subtree: true };
 
 
 const observer = new MutationObserver(callback);
-if (moveBox) {
+if (moveBox && board) {
     console.log('Move box found');
     observer.observe(moveBox, config);
 }

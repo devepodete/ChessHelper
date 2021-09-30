@@ -42,9 +42,10 @@ class ChessHelper:
 
 class Parser:
     @staticmethod
-    def parseMove(string):
-        return string.replace('\r', '').split('\n')[-1]
-
+    def parseMoves(string):
+        s = string.replace('\r', '').split('\n')
+        num = int(s[-1])
+        return s[-num-1:-1]
 
 class SocketWorker:
     def __init__(self, port: int, chess_helper):
@@ -82,12 +83,14 @@ class SocketWorker:
                 self.logger.log('no more data from socket. Exiting...')
                 break
 
-            receivedMove = Parser.parseMove(data)
-            self.logger.log(f'got data: {receivedMove}')
+            receivedMoves = Parser.parseMoves(data)
+            self.chessHelper.resetBoard()
+            self.logger.log(f'got data: `{receivedMoves}`')
 
-            self.chessHelper.makeMove(receivedMove)
+            for move in receivedMoves:
+                self.chessHelper.makeMove(move)
+
             bestMove = self.chessHelper.getNextBestMove()
-            print(f'{bestMove=}')
 
             if bestMove == 'None':
                 self.chessHelper.resetBoard()

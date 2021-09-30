@@ -30,7 +30,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             body: request.payload
         })
         .then((response) => {
-            console.log('got response from python: ' + response.status);
             response.text().then((txt) => {
                 sendResponse(txt);
             });
