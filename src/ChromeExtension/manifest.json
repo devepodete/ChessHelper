@@ -30,7 +30,6 @@
     ],
     "host_permissions": [
         "https://lichess.org/*",
-        "http://localhost/*",
-        "https://www.google.com/"
+        "http://localhost/*"
     ]
 }
