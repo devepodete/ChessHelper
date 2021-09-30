@@ -17,7 +17,7 @@ This should be used only for playing against computers.
 
 ### Use
 1. Enable extension in browser
-2. Run localhost chess worker ```python3 src/ChessBot/main.py```
+2. Go to ```src/ChessBot``` and run localhost chess worker ```python3 main.py```
 3. Open console in your browser
 4. Go to one of supported websites and enjoy
 
