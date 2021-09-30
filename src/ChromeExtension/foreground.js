@@ -133,7 +133,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message === 'switch_state') {
         isWorking = request.state;
 
-        if (isWorking) {
+        if (board && isWorking) {
             getMovesAndDraw();
         } else {
             clearPaintings();
