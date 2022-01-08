@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 
 current_platform = ''
 
@@ -31,7 +32,12 @@ def announce(begin_msg=None, end_msg=None):
     return real_wrap
 
 
-@announce(begin_msg='Creating directories', end_msg='Directories created')
+@announce('Collecting required packages', 'Required packages collected')
+def load_pip():
+    subprocess.run(['pip3', 'install', '-r', 'requirements.txt'])
+
+
+@announce('Creating directories', 'Directories created')
 def create_directories(dirs):
     for path in dirs:
         print(path, end='...')
@@ -39,8 +45,9 @@ def create_directories(dirs):
         print(' OK')
 
 
-@announce(begin_msg='Setup begin', end_msg='Setup end')
+@announce('Setup begin', 'Setup end')
 def setup():
+    load_pip()
     create_directories(directories)
 
     print('Download chess engine which you want to use.')
@@ -50,4 +57,5 @@ def setup():
     print()
 
 
-setup()
+if __name__ == '__main__':
+    setup()

@@ -43,7 +43,7 @@ class Worker:
             response = self.chessBot.process_data(data)
             if response is None:
                 continue
-            
+
             self.logger.log('sending response...')
             self.sendResponse(conn, ' '.join(response))
             self.logger.log('OK')

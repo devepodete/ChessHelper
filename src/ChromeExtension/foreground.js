@@ -163,7 +163,7 @@ function getAllMoves() {
     return [allMoves, moveCount];
 }
 
-function sendMovesAndDrawBest(msg) {
+function sendMovesAndDrawResponse(msg) {
     chrome.runtime.sendMessage({
         message: move_made,
         payload: msg
@@ -185,7 +185,7 @@ function sendMovesAndDrawBest(msg) {
 function getMovesAndDraw() {
     const [allMoves, moveCount] = getAllMoves();
     const msg = allMoves + moveCount;
-    sendMovesAndDrawBest(msg);
+    sendMovesAndDrawResponse(msg);
 }
 
 const callback = function(mutationsList, observer) {
